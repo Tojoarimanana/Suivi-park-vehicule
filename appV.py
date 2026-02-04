@@ -113,12 +113,12 @@ def format_liters_columns(df, liter_cols):
     return config
 
 # Configuration de la page
-st.set_page_config(page_title="Suivi Véhicules OMNIS ", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Suivi des Véhicules OMNIS ", layout="wide", initial_sidebar_state="expanded")
 st.title("🚗📊 Suivi des Véhicules OMNIS ")
 
 # Sidebar pour filtres globaux
 st.sidebar.header("🔧 Filtres Globaux")
-uploaded_file = st.sidebar.file_uploader("📁 Charger le fichier Excel", type=["xlsx"])
+uploaded_file = st.sidebar.file_uploader("📁 Charger un fichier Excel", type=["xlsx"])
 
 if uploaded_file:
     with st.spinner("Chargement des données..."):
@@ -126,13 +126,13 @@ if uploaded_file:
         data = load_and_clean_data(file_hash, uploaded_file.getvalue())
     
     if not data:
-        st.error("Impossible de charger les données. Vérifiez le fichier.")
+        st.error("Impossible de charger les données. Veuillez vérifier le fichier.")
         st.stop()
     
     st.sidebar.success("✅ Données chargées")
     
     # Stats de chargement (bonus)
-    with st.sidebar.expander("📈 Stats Chargement"):
+    with st.sidebar.expander("📈 Statistiques Chargement"):
         for sheet, df in data.items():
             st.write(f"{sheet}: {len(df)} lignes")
 
@@ -144,7 +144,7 @@ if uploaded_file:
         if sheet in data:
             dfs[sheet] = data[sheet]
         else:
-            st.error(f"Feuille '{sheet}' manquante. Utilisez l'Excel généré pour tester.")
+            st.error(f"Feuille '{sheet}' manquante. est manquante. Veuillez utiliser le fichier Excel .")
             st.stop()
 
     df_vehicules = dfs["Parc_Véhicules"]
@@ -154,11 +154,11 @@ if uploaded_file:
 
     df_vehicules_filtered = df_vehicules[df_vehicules["Direction"].isin(selected_directions)]
     if df_vehicules_filtered.empty:
-        st.warning("Aucune direction sélectionnée valide.")
+        st.warning("Aucune direction valide sélectionnée.")
         st.stop()
 
     # Sélection véhicule
-    selected_vehicle = st.selectbox("🚗 Véhicule", options=df_vehicules_filtered["Immatriculation"].unique())
+    selected_vehicle = st.selectbox("🚗 Sélection du véhicule", options=df_vehicules_filtered["Immatriculation"].unique())
 
     # Infos véhicule filtrées
     vehicule_info = df_vehicules_filtered[df_vehicules_filtered["Immatriculation"] == selected_vehicle].iloc[0]
@@ -176,27 +176,27 @@ if uploaded_file:
         st.metric("📏 Kilométrage", f"{int(dernier_km):,}".replace(",", " ") + " km")
     with col2:
         total_entretien = df_vehicle_specific.get("Entretien", pd.DataFrame())["Coût_Total"].sum()
-        st.metric("🛠 Coût Entretien", f"{total_entretien:,.0f}".replace(",", " ") + " Ar")
+        st.metric("🛠 Coût d’entretien", f"{total_entretien:,.0f}".replace(",", " ") + " Ar")
     with col3:
         total_reparations = (df_vehicle_specific.get("Réparations Internes", pd.DataFrame())["Coût_Total"].sum() + 
                              df_vehicle_specific.get("Prestation externe", pd.DataFrame())["Coût_Total"].sum())
-        st.metric("🔧 Coût Réparations", f"{total_reparations:,.0f}".replace(",", " ") + " Ar")
+        st.metric("🔧 Coût des réparations", f"{total_reparations:,.0f}".replace(",", " ") + " Ar")
     with col4:
         total_achats = df_vehicle_specific.get("Achats", pd.DataFrame())["Prix_Total"].sum()
-        st.metric("🛒 Achats", f"{total_achats:,.0f}".replace(",", " ") + " Ar")
+        st.metric("🛒 Coûts totaux des achats de pièces", f"{total_achats:,.0f}".replace(",", " ") + " Ar")
     
     # Ligne 2 : 3 KPIs
     col5, col6, col7 = st.columns(3)
     with col5:
         cout_total_veh = total_entretien + total_reparations + total_achats
-        st.metric("💰 Coût Total Véhicule", f"{cout_total_veh:,.0f}".replace(",", " ") + " Ar")
+        st.metric("💰 Coûts totaux d’entretien et de réparation", f"{cout_total_veh:,.0f}".replace(",", " ") + " Ar")
     with col6:
         df_carbu = df_vehicle_specific.get("Carburant", pd.DataFrame())
         total_litres = df_carbu["Litres"].sum()
-        st.metric("⛽ Total Litres", f"{total_litres:,.1f}".replace(",", " ") + " L")
+        st.metric("⛽ Consommation totale de carburant (L)", f"{total_litres:,.1f}".replace(",", " ") + " L")
     with col7:
         total_carbu_ar = df_carbu["Total_Ar"].sum()
-        st.metric("⛽ Coût Carburant", f"{total_carbu_ar:,.0f}".replace(",", " ") + " Ar")
+        st.metric("⛽ Coûts de consommation de carburant", f"{total_carbu_ar:,.0f}".replace(",", " ") + " Ar")
 
     # Alertes (ex. : assurances expirées)
     today = pd.to_datetime(dt.date.today())  # Convertir en datetime64[ns] pour compatibilité pandas
@@ -217,8 +217,8 @@ if uploaded_file:
     # Onglets améliorés (AJOUT onglet "⛽ Carburant")
     tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "📋 Fiche Véhicule", "🛠 Entretien & Réparations",
-        "📈 Kilométrage & Performances", "📋 Assurance & Visites",
-        "🛒 Achats & Fournisseurs", "⛽ Carburant", "📊 Dashboard Global & Export"
+        "📈 Kilométrage et Performances", "📋 Assurance et visites techniques",
+        "🛒 Achats & Fournisseurs", "⛽ Carburant", "📊 Tableau de bord global & Export"
     ])
 
     with tab1:
@@ -234,12 +234,12 @@ if uploaded_file:
         st.subheader("🛠 Entretien")
         df_e = df_vehicle_specific.get("Entretien", pd.DataFrame())
         if df_e.empty:
-            st.info("Aucun entretien.")
+            st.info("Aucune opération d’entretien enregistrée.")
         else:
             df_e_formatted = pre_format_columns(df_e, ["Coût_Total"], [])
             st.dataframe(df_e_formatted, use_container_width=True)
             if 'Type_Entretien' in df_e.columns and 'Coût_Total' in df_e.columns:
-                fig = px.pie(df_e, names='Type_Entretien', values='Coût_Total', title='Répartition Coûts Entretien (Ar)')
+                fig = px.pie(df_e, names='Type_Entretien', values='Coût_Total', title='Répartition des coûts d’entretien (Ar)')
                 fig.update_traces(textinfo='label+percent+value', texttemplate='%{label}<br>%{percent}<br>%{value} Ar')
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -247,13 +247,13 @@ if uploaded_file:
         st.subheader("🔧 Réparations Internes")
         df_ri = df_vehicle_specific.get("Réparations Internes", pd.DataFrame())
         if df_ri.empty:
-            st.info("Aucune réparation interne.")
+            st.info("Aucune réparation interne enregistrée.")
         else:
             df_ri_formatted = pre_format_columns(df_ri, ["Coût_Total"], [])
             st.dataframe(df_ri_formatted, use_container_width=True)
             if 'Date d_entrée à Andraharo' in df_ri.columns and 'Coût_Total' in df_ri.columns:
                 fig_ri = px.bar(df_ri, x='Date d_entrée à Andraharo', y='Coût_Total', color='Panne', 
-                                title='Évolution Coûts Réparations Internes (Ar)')
+                                title='Évolution des coûts des réparations internes (Ar)')
                 fig_ri.update_yaxes(title_text="Coût (Ar)")
                 st.plotly_chart(fig_ri, use_container_width=True)
 
@@ -261,7 +261,7 @@ if uploaded_file:
         st.subheader("🌐 Prestations Externes")
         df_pe = df_vehicle_specific.get("Prestation externe", pd.DataFrame())
         if df_pe.empty:
-            st.info("Aucune prestation externe.")
+            st.info("Aucune prestation externe enregistrée.")
         else:
             df_pe_formatted = pre_format_columns(df_pe, ["Coût_Total"], [])
             st.dataframe(df_pe_formatted, use_container_width=True)
@@ -271,10 +271,10 @@ if uploaded_file:
                 st.plotly_chart(fig_pe, use_container_width=True)
 
     with tab3:
-     st.subheader("📈 Suivi Kilométrage")  # CHANGÉ EN BAR CHART
+     st.subheader("📈 Suivi du kilométrage")  # CHANGÉ EN BAR CHART
      df_km = df_vehicle_specific.get("Suivi_Kilométrage", pd.DataFrame())
      if df_km.empty:
-        st.info("Pas de données kilométriques.")
+        st.info("Aucune donnée de kilométrage disponible.")
      else:
         # TRI ET CALCUL KM PARCOCUS (nouveau)
         df_km = df_km.sort_values("Date").reset_index(drop=True)  # Trier par date pour diff correcte
@@ -286,7 +286,7 @@ if uploaded_file:
         
         if 'Date' in df_km.columns and 'Km_Parcourus' in df_km.columns:
             # Bar chart avec km parcourus
-            fig_km = px.bar(df_km, x='Date', y='Km_Parcourus', title='Évolution Km Parcourus (Bar Chart)')
+            fig_km = px.bar(df_km, x='Date', y='Km_Parcourus', title='Évolution des kilomètres parcourus')
             fig_km.update_yaxes(title_text="Km Parcourus entre Dates")
             st.plotly_chart(fig_km, use_container_width=True)
 
@@ -305,10 +305,10 @@ if uploaded_file:
         st.dataframe(df_vt_display_formatted, use_container_width=True)  # Pas de monétaire ici
 
     with tab5:  # SÉQUENTIEL (Haut/Bas) au lieu de côte à côte
-        st.subheader("🛒 Achats")
+        st.subheader("🛒 Achats réalisés")
         df_ach = df_vehicle_specific.get("Achats", pd.DataFrame())
         if df_ach.empty:
-            st.info("Aucun achat.")
+            st.info("Aucun Achats réalisés.")
         else:
             df_ach_formatted = pre_format_columns(df_ach, ["Prix_Unitaire", "Prix_Total"], ["Quantité"])
             st.dataframe(df_ach_formatted, use_container_width=True)
@@ -317,14 +317,14 @@ if uploaded_file:
                 fig_ach.update_traces(textinfo='label+percent+value', texttemplate='%{label}<br>%{percent}<br>%{value} Ar')
                 st.plotly_chart(fig_ach, use_container_width=True)
         
-        st.subheader("📇 Fournisseurs")
+        st.subheader("📇 Liste des fournisseurs")
         st.dataframe(dfs["Fournisseurs"], use_container_width=True)
 
     with tab6:  # ONGLET CARBURANT (SUPPRIMÉ PIE)
-        st.subheader("⛽ Consommation Carburant")
+        st.subheader("⛽ Consommation de carburant")
         df_carbu = df_vehicle_specific.get("Carburant", pd.DataFrame())
         if df_carbu.empty:
-            st.info("Aucune donnée carburant.")
+            st.info("Aucune donnée de carburant disponible.")
         else:
             # Tableau avec formats
             df_carbu_formatted = pre_format_columns(df_carbu, ["Prix_Litre", "Total_Ar"], ["Litres"])
@@ -332,12 +332,12 @@ if uploaded_file:
             
             # Graphique Litres par date (bar) - UNIQUEMENT
             if 'Date' in df_carbu.columns and 'Litres' in df_carbu.columns:
-                fig_litres = px.bar(df_carbu, x='Date', y='Litres', color='Type_Carburant', title='Évolution Consommation (L)')
+                fig_litres = px.bar(df_carbu, x='Date', y='Litres', color='Type_Carburant', title='Évolution de la consommation de carburant (L)')
                 fig_litres.update_yaxes(title_text="Litres (L)")
                 st.plotly_chart(fig_litres, use_container_width=True)
 
     with tab7:
-        st.subheader("📊 Dashboard Global")
+        st.subheader("📊Tableau de bord global")
         # KPIs globaux
         total_veh = len(df_vehicules_filtered)
         total_coût = (dfs.get("Entretien", pd.DataFrame())["Coût_Total"].sum() + 
@@ -346,9 +346,9 @@ if uploaded_file:
                       dfs.get("Achats", pd.DataFrame())["Prix_Total"].sum() + 
                       dfs.get("Carburant", pd.DataFrame())["Total_Ar"].sum())  # AJOUT Carburant
         col_g1, col_g2, col_g3 = st.columns(3)
-        col_g1.metric("🚗 Nb Véhicules", total_veh)
-        col_g2.metric("💰 Coût Total Global", f"{total_coût:,.0f}".replace(",", " ") + " Ar")
-        col_g3.metric("⏱ Dernière MAJ", format_date_fr(today))
+        col_g1.metric("🚗 Nombre de véhicules", total_veh)
+        col_g2.metric("💰 Coût total global", f"{total_coût:,.0f}".replace(",", " ") + " Ar")
+        col_g3.metric("⏱ date de dernière mise à jour", format_date_fr(today))
 
         # Graphique global : Coûts par direction
         df_coûts_dir = df_vehicules.merge(dfs.get("Entretien", pd.DataFrame()), on="Immatriculation", how="left")
@@ -356,7 +356,7 @@ if uploaded_file:
         money_cols_global = ["Coût_Total"]
         config_global = format_money_columns(df_coûts_dir, money_cols_global)
         fig_global = px.bar(df_coûts_dir.groupby("Direction")["Coût_Total"].sum().reset_index(), 
-                            x="Direction", y="Coût_Total", title="Coûts par Direction (Ar)")
+                            x="Direction", y="Coût_Total", title="Coûts totaux d’entretien et de réparation par Direction (Ar)")
         fig_global.update_yaxes(title_text="Coût (Ar)")
         st.plotly_chart(fig_global, use_container_width=True)
         
@@ -368,7 +368,7 @@ if uploaded_file:
             st.plotly_chart(fig_carbu_type, use_container_width=True)
 
         # Export Rapport
-        st.subheader("📥 Générer Rapport")
+        st.subheader("📥Génération du rapport")
         resume_data = {
             "Immatriculation": selected_vehicle,
             "Direction": vehicule_info["Direction"],
